@@ -3,6 +3,9 @@ package com.nguyen.compose_basics2
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -61,7 +64,15 @@ private fun Greeting(name: String) {
     // MutableState are interfaces that hold some value and trigger UI updates (recompositions)
     // whenever that value changes
     // To preserve state across recompositions, remember the mutable state using 'remember'
-    val expanded = remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+    // animateDpAsState composable takes a targetValue whose type is Dp
+    // extraPadding depends on the expanded state
+    val extraPadding by animateDpAsState(
+        targetValue = if (expanded) 48.dp else 0.dp,
+        // animationSpec lets you customize the animation
+        // spring relies on physical properties (damping and stiffness) to make animations more natural
+        animationSpec = spring(dampingRatio = Spring.DampingRatioMediumBouncy, stiffness = Spring.StiffnessLow)
+    )
 
     Surface(
         color = MaterialTheme.colorScheme.primary,
@@ -73,7 +84,7 @@ private fun Greeting(name: String) {
             Column(modifier = Modifier
                 .weight(1f)
                 // expand an item when requested
-                .padding(bottom = if (expanded.value) 48.dp else 0.dp)
+                .padding(bottom = extraPadding.coerceAtLeast(0.dp))
             ) {
                 Text(text = "Hello,")
                 Text(text = name)
@@ -81,8 +92,8 @@ private fun Greeting(name: String) {
             // Button is a composable provided by the material3 package which takes a composable as
             // the last argument.
             // toggle the value of the expanded state and show a different text depending on the value.
-            ElevatedButton(onClick = { expanded.value = !expanded.value }) {
-                Text(text = if (expanded.value) "Show less" else "Show more")
+            ElevatedButton(onClick = { expanded = !expanded }) {
+                Text(text = if (expanded) "Show less" else "Show more")
             }
         }
     }
@@ -92,7 +103,7 @@ private fun Greeting(name: String) {
 @Composable
 fun DefaultPreview() {
     ComposeBasics2Theme {
-        MyApp()
+        Greetings()
     }
 }
 
