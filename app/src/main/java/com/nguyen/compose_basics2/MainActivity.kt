@@ -4,13 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.ElevatedButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,9 +24,24 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MyApp(modifier: Modifier = Modifier, names: List<String> = listOf("World", "Compose")) {
+fun MyApp(modifier: Modifier = Modifier) {
+    // shouldShowOnboarding is hoisted from OnboardingScreen()
+    var shouldShowOnboarding by remember { mutableStateOf(true) }
+
+    Surface(modifier) {
+        // share shouldShowOnboarding with OnboardingScreen() without passing it
+        if (shouldShowOnboarding) {
+            // notify us when the user clicked on the Continue button with a callback
+            OnboardingScreen(onContinueClicked = { shouldShowOnboarding = false })
+        } else {
+            Greetings()
+        }
+    }
+}
+
+@Composable
+private fun Greetings(modifier: Modifier = Modifier, names: List<String> = listOf("World", "Compose")) {
     Column(modifier = modifier.padding(vertical = 4.dp)) {
-        // use a for loop to add elements to the Column
         for (name in names) {
             Greeting(name = name)
         }
@@ -75,5 +86,45 @@ private fun Greeting(name: String) {
 fun DefaultPreview() {
     ComposeBasics2Theme {
         MyApp()
+    }
+}
+
+@Composable
+fun OnboardingScreen(onContinueClicked: () -> Unit, modifier: Modifier = Modifier) {
+    // Column can be configured to display its contents in the center of the screen
+    Column(
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Welcome to the Basics Codelab!")
+        Button(modifier = Modifier.padding(vertical = 24.dp), onClick = onContinueClicked) {
+            Text("Continue")
+        }
+    }
+}
+
+// new preview, with a fixed height to verify that the content is aligned correctly.
+@Preview(showBackground = true, widthDp = 320, heightDp = 320)
+@Composable
+fun OnboardingPreview() {
+    ComposeBasics2Theme {
+        OnboardingScreen(onContinueClicked = {})
+    }
+}
+
+@Preview(showBackground = true, widthDp = 320)
+@Composable
+private fun GreetingsPreview() {
+    ComposeBasics2Theme {
+        Greetings()
+    }
+}
+
+@Preview
+@Composable
+fun MyAppPreview() {
+    ComposeBasics2Theme {
+        MyApp(Modifier.fillMaxSize())
     }
 }
